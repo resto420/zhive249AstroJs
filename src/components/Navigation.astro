@@ -6,26 +6,49 @@ interface NavItem {
   href: string;
   isButton?: boolean;
   isDropdown?: boolean;
-  dropdownItems?: Array<{ name: string, href: string }>;
+  dropdownItems?: Array<{ name: string, href: string, description?: string }>;
+  description?: string;
 }
 
 const menuItems: NavItem[] = [
-  { name: 'Home', href: '/', isButton: false },
+  { 
+    name: 'Home',
+    href: '/',
+    isButton: false,
+    description: 'Return to homepage'
+  },
   {
     name: 'Services',
     href: '/services',
     isDropdown: true,
+    description: 'Explore our comprehensive range of digital marketing and development services',
     dropdownItems: [
-      { name: 'Creative Branding', href: '/services/creative-branding' },
-      { name: 'Web Development', href: '/services/web-development' },
-      { name: 'Market Research', href: '/services/market-research' },
-      { name: 'Digital Marketing', href: '/services/digital-marketing' },
-      { name: 'Content Creation', href: '/services/content-creation' },
-      { name: 'Analytics & Optimization', href: '/services/analytics-optimization' },
+      { name: 'Creative Branding', href: '/services/creative-branding', description: 'Professional brand identity design and strategy services' },
+      { name: 'Web Development', href: '/services/web-development', description: 'Custom website and web application development solutions' },
+      { name: 'Market Research', href: '/services/market-research', description: 'In-depth market analysis and consumer insights' },
+      { name: 'Digital Marketing', href: '/services/digital-marketing', description: 'Results-driven digital marketing campaigns and strategies' },
+      { name: 'Content Creation', href: '/services/content-creation', description: 'High-quality content creation and content marketing services' },
+      { name: 'Analytics & Optimization', href: '/services/analytics-optimization', description: 'Data-driven optimization and performance tracking' },
     ],
   },
-  { name: 'About Us', href: '/about', isButton: false },
-  { name: 'Contact', href: '/contact', isButton: false },
+  { 
+    name: 'About Us',
+    href: '/about',
+    isButton: false,
+    description: 'Learn about our company history, mission, and team'
+  },
+  { 
+    name: 'Articles',
+    href: '/articles',
+    isButton: false,
+    description: 'Read our latest insights and industry updates'
+  },
+  { 
+    name: 'Contact',
+    href: '/contact',
+    isButton: false,
+    description: 'Get in touch with our team for inquiries and support'
+  },
 ];
 
 const pathname = new URL(Astro.request.url).pathname;
@@ -34,62 +57,92 @@ const pathname = new URL(Astro.request.url).pathname;
 <nav class="fixed w-full z-50 top-0 start-0 bg-navy-900/90 backdrop-blur-xl border-b border-navy-300/10" aria-label="Main navigation">
   <Container>
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-      <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse" aria-label="Go to homepage">
-        <img src="/images/Logo.svg" class="h-8" alt="Zhive Logo" />
+      <!-- Logo and Brand -->
+      <a href="/" 
+         class="flex items-center space-x-3 rtl:space-x-reverse" 
+         aria-label="Zhive249 - Return to homepage">
+        <img src="/images/Logo.svg" 
+             class="h-8" 
+             alt="Zhive249 Digital Marketing Agency Logo"
+             width="32"
+             height="32"
+             loading="eager"
+             decoding="async" />
         <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-accent-500">
           Zhive
           <span class="text-primary-500">249</span>
         </span>
       </a>
 
-      <!-- Mobile menu button -->
+      <!-- Mobile Menu Button -->
       <button
         id="mobile-menu-button"
         type="button"
-        class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+        class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:focus:ring-gray-600"
         aria-controls="navbar"
         aria-expanded="false"
         aria-label="Toggle navigation menu"
       >
         <span class="sr-only">Open main menu</span>
-        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14" width="17" height="14">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
         </svg>
       </button>
 
-      <!-- Desktop and Mobile menu container -->
+      <!-- Navigation Menu -->
       <div class="hidden w-full md:block md:w-auto" id="navbar">
-        <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0">
+        <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0" role="menubar">
           {
             menuItems.map((item) => (
-              <li class="relative group">
+              <li class="relative group" role="none">
                 {item.isDropdown ? (
                   <>
-                    <button
-                      class="flex items-center justify-between w-full py-2 px-3 text-dark-400 dark:text-dark-300 hover:text-primary-500 dark:hover:text-primary-400 md:hover:bg-transparent md:border-0 md:p-0 md:w-auto"
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                      aria-controls={`navbar-dropdown-${item.name}`}
-                      id={`dropdown-button-${item.name}`}
+                    <div class="flex items-center gap-1">
+                      <a
+                        href={item.href}
+                        class="flex items-center py-2 px-3 text-dark-400 dark:text-dark-300 md:p-0"
+                        aria-current={pathname === item.href ? "page" : undefined}
+                        title={item.description}
+                      >
+                        {item.name}
+                      </a>
+                      <button
+                        class="p-1"
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        aria-controls={`navbar-dropdown-${item.name}`}
+                        id={`dropdown-button-${item.name}`}
+                        aria-label={`Toggle ${item.name} dropdown menu`}
+                      >
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <!-- Dropdown Menu -->
+                    <div 
+                      id={`navbar-dropdown-${item.name}`} 
+                      class="hidden absolute z-10 md:group-hover:block group-focus-within:block font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-72 dark:bg-gray-700 dark:divide-gray-600"
+                      role="menu"
+                      aria-labelledby={`dropdown-button-${item.name}`}
                     >
-                      {item.name}
-                      <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-                      </svg>
-                    </button>
-                    <div id={`navbar-dropdown-${item.name}`} class="hidden absolute z-10 md:group-hover:block group-focus-within:block font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                      <ul class="py-2 text-sm text-gray-700 dark:text-gray-400">
-                        {item.dropdownItems?.map((dropItem) => (
-                          <li>
-                            <a
-                              href={dropItem.href}
-                              class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                            >
-                              {dropItem.name}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
+                      <nav aria-label={`${item.name} submenu`}>
+                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-400" role="menu">
+                          {item.dropdownItems?.map((dropItem) => (
+                            <li role="none">
+                              <a
+                                href={dropItem.href}
+                                class="block px-4 py-3"
+                                role="menuitem"
+                                aria-current={pathname === dropItem.href ? "page" : undefined}
+                              >
+                                <div class="font-medium text-gray-900 dark:text-white mb-1">{dropItem.name}</div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{dropItem.description}</p>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </nav>
                     </div>
                   </>
                 ) : (
@@ -99,9 +152,12 @@ const pathname = new URL(Astro.request.url).pathname;
                       "block py-2 px-3 md:p-0",
                       item.isButton
                         ? "text-white bg-primary-500 rounded md:bg-transparent md:text-primary-500"
-                        : "text-dark-400 dark:text-dark-300 hover:text-primary-500 dark:hover:text-primary-400",
+                        : "text-dark-400 dark:text-dark-300",
                       pathname === item.href && "text-primary-500 dark:text-primary-400"
                     ]}
+                    role="menuitem"
+                    title={item.description}
+                    aria-current={pathname === item.href ? "page" : undefined}
                   >
                     {item.name}
                   </a>
@@ -116,65 +172,148 @@ const pathname = new URL(Astro.request.url).pathname;
 </nav>
 
 <script>
-  // Handle mobile menu toggle
-  const mobileMenuButton = document.getElementById('mobile-menu-button');
-  const navbar = document.getElementById('navbar');
+  // Helper function to normalize pathname
+  const normalizePathname = (path: string) => {
+    return path.replace(/\/$/, ''); // Remove trailing slash
+  };
 
-  if (mobileMenuButton && navbar) {
+  // Helper function to toggle element visibility
+  const toggleElement = (element: HTMLElement, show?: boolean) => {
+    if (show === undefined) {
+      element.classList.toggle('hidden');
+    } else {
+      element.classList.toggle('hidden', !show);
+    }
+  };
+
+  // Helper function to update ARIA attributes
+  const updateAriaAttributes = (element: HTMLElement, expanded: boolean) => {
+    element.setAttribute('aria-expanded', expanded.toString());
+  };
+
+  // Initialize navigation
+  const initNavigation = () => {
+    const navbar = document.getElementById('navbar');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+
+    if (!navbar || !mobileMenuButton) return;
+
+    // Handle mobile menu
     mobileMenuButton.addEventListener('click', () => {
-      navbar.classList.toggle('hidden');
       const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
-      mobileMenuButton.setAttribute('aria-expanded', (!isExpanded).toString());
+      toggleElement(navbar);
+      updateAriaAttributes(mobileMenuButton, !isExpanded);
     });
 
-    // Handle dropdown toggle on click (mobile and desktop)
-    const dropdownButtons = document.querySelectorAll('[id^="dropdown-button-"]');
-    dropdownButtons.forEach(button => {
-      button.addEventListener('click', (event) => {
+    // Handle all dropdowns using event delegation
+    navbar.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const dropdownButton = target.closest('[id^="dropdown-button-"]');
+      
+      if (dropdownButton) {
         event.preventDefault();
-        const dropdown = document.getElementById(button.getAttribute('aria-controls') as string);
+        const dropdownId = dropdownButton.getAttribute('aria-controls');
+        const dropdown = dropdownId ? document.getElementById(dropdownId) : null;
+        
         if (dropdown) {
-          dropdown.classList.toggle('hidden');
+          const isExpanded = dropdownButton.getAttribute('aria-expanded') === 'true';
+          
+          // Close other open dropdowns
+          document.querySelectorAll('[id^="navbar-dropdown-"]').forEach(el => {
+            if (el.id !== dropdownId) {
+              toggleElement(el as HTMLElement, false);
+              const button = document.querySelector(`[aria-controls="${el.id}"]`);
+              if (button) updateAriaAttributes(button as HTMLElement, false);
+            }
+          });
+
+          toggleElement(dropdown);
+          updateAriaAttributes(dropdownButton as HTMLElement, !isExpanded);
         }
-        const isExpanded = button.getAttribute('aria-expanded') === 'true';
-        button.setAttribute('aria-expanded', (!isExpanded).toString());
-      });
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (event) => {
-      const target = event.target as Node;
-      if (!navbar.contains(target) && !mobileMenuButton.contains(target)) {
-        navbar.classList.add('hidden');
-        mobileMenuButton.setAttribute('aria-expanded', 'false');
       }
     });
 
-    // Close menu when pressing Escape
-    document.addEventListener('keydown', (event) => {
+    // Handle keyboard navigation
+    navbar.addEventListener('keydown', (event) => {
+      const target = event.target as HTMLElement;
+      
+      if (event.key === 'Enter' || event.key === ' ') {
+        const dropdownButton = target.closest('[id^="dropdown-button-"]');
+        if (dropdownButton) {
+          event.preventDefault();
+          (dropdownButton as HTMLElement).click();
+        }
+      }
+
       if (event.key === 'Escape') {
-        navbar.classList.add('hidden');
-        mobileMenuButton.setAttribute('aria-expanded', 'false');
+        // Close all dropdowns
+        document.querySelectorAll('[id^="navbar-dropdown-"]').forEach(el => {
+          toggleElement(el as HTMLElement, false);
+          const button = document.querySelector(`[aria-controls="${el.id}"]`);
+          if (button) updateAriaAttributes(button as HTMLElement, false);
+        });
+      }
+
+      // Arrow key navigation within dropdown
+      if (event.key.startsWith('Arrow')) {
+        const dropdown = target.closest('[role="menu"]');
+        if (dropdown) {
+          event.preventDefault();
+          const items = Array.from(dropdown.querySelectorAll('[role="menuitem"]'));
+          const currentIndex = items.indexOf(target as HTMLElement);
+          let nextIndex;
+
+          switch (event.key) {
+            case 'ArrowDown':
+              nextIndex = currentIndex + 1 >= items.length ? 0 : currentIndex + 1;
+              break;
+            case 'ArrowUp':
+              nextIndex = currentIndex - 1 < 0 ? items.length - 1 : currentIndex - 1;
+              break;
+            default:
+              return;
+          }
+
+          (items[nextIndex] as HTMLElement).focus();
+        }
       }
     });
-  }
+
+    // Update active state based on current pathname
+    const currentPath = normalizePathname(window.location.pathname);
+    document.querySelectorAll('a[href]').forEach(link => {
+      const linkPath = normalizePathname(link.getAttribute('href') || '');
+      if (currentPath === linkPath) {
+        link.setAttribute('aria-current', 'page');
+        link.classList.add('text-primary-500', 'dark:text-primary-400');
+      }
+    });
+
+    // Handle click outside to close dropdowns
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (!navbar.contains(target)) {
+        document.querySelectorAll('[id^="navbar-dropdown-"]').forEach(el => {
+          toggleElement(el as HTMLElement, false);
+          const button = document.querySelector(`[aria-controls="${el.id}"]`);
+          if (button) updateAriaAttributes(button as HTMLElement, false);
+        });
+      }
+    });
+  };
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', initNavigation);
 </script>
 
 <style>
-  .group:hover #navbar-dropdown,
-  .group:focus-within #navbar-dropdown {
-    visibility: visible;
-    animation: slideDown 0.3s ease-in-out;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+  /* Ensure dropdown links are visible to search engines even when hidden */
+  @media print {
+    [id^="navbar-dropdown-"] {
+      display: block !important;
+      position: static !important;
+      background: none !important;
+      box-shadow: none !important;
     }
   }
 </style>

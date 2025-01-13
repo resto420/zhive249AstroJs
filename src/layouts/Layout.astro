@@ -1,13 +1,18 @@
 ---
+/// <reference types="astro/client" />
 import "../styles/global.css";
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import { siteConfig } from '../config';
+import ScrollToTop from '../components/ScrollToTop.astro';
+import { siteConfig } from '../config/site';
 import { Analytics } from "@vercel/analytics/react"; 
 
-const siteUrl = import.meta.env.SITE_URL;
-const contactEmail = import.meta.env.CONTACT_EMAIL;
-const googleAnalyticsId = import.meta.env.GOOGLE_ANALYTICS_ID;
+// Google Analytics IDs
+const GA4_ID = 'G-WCTR5L70NZ';
+const GTM_ID = 'GT-TX9NCMDC';
+
+// Environment variables
+const isDev = process.env.NODE_ENV !== 'production';
 
 interface Props {
   title?: string;
@@ -37,8 +42,8 @@ const {
   tags,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
-const socialImageURL = new URL(image, siteConfig.site).toString();
+const canonicalURL = new URL(Astro.url.pathname, siteConfig.url);
+const socialImageURL = new URL(image, siteConfig.url).toString();
 
 // Construct JSON-LD
 const jsonLd = article ? {
@@ -50,200 +55,125 @@ const jsonLd = article ? {
   "author": authors?.map(author => ({
     "@type": "Person",
     "name": author
-  })) ?? [{ "@type": "Person", "name": siteConfig.author.name }],
+  })),
+  "datePublished": publishedTime,
+  "dateModified": modifiedTime,
+  "articleSection": section,
+  "keywords": tags?.join(", "),
   "publisher": {
     "@type": "Organization",
     "name": siteConfig.name,
     "logo": {
       "@type": "ImageObject",
-      "url": new URL("/Logo.svg", siteConfig.site).toString()
+      "url": new URL("/images/Logo.svg", siteConfig.url).toString()
     }
-  },
-  "datePublished": publishedTime,
-  "dateModified": modifiedTime ?? publishedTime,
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": canonicalURL
   }
 } : {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": siteConfig.name,
-  "url": siteConfig.site,
-  "logo": new URL("/Logo.svg", siteConfig.site).toString(),
-  "sameAs": [
-    siteConfig.social.twitter,
-    siteConfig.social.github,
-    siteConfig.social.linkedin
-  ]
+  "@type": "WebSite",
+  "name": title,
+  "description": description,
+  "url": canonicalURL,
+  "publisher": {
+    "@type": "Organization",
+    "name": siteConfig.name,
+    "logo": {
+      "@type": "ImageObject",
+      "url": new URL("/images/Logo.svg", siteConfig.url).toString()
+    }
+  }
 };
-
-// Security Headers
-const securityHeaders = {
-  'Content-Security-Policy': [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googletagmanager.com",
-    "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
-    "img-src 'self' data: https:",
-    "font-src 'self' fonts.gstatic.com data:",
-    "connect-src 'self' *.google-analytics.com",
-    "frame-src 'self' *.youtube.com *.vimeo.com",
-    "manifest-src 'self'",
-    "worker-src 'self'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'self'",
-    "object-src 'none'",
-    "upgrade-insecure-requests"
-  ].join('; '),
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'SAMEORIGIN',
-  'X-XSS-Protection': '1; mode=block',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': [
-    'accelerometer=self',
-    'camera=self',
-    'geolocation=self',
-    'gyroscope=self',
-    'magnetometer=self',
-    'microphone=self',
-    'payment=self',
-    'usb=self'
-  ].join(', '),
-  'Cross-Origin-Embedder-Policy': 'require-corp',
-  'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Resource-Policy': 'same-origin'
-};
-
-// Set security headers
-Object.entries(securityHeaders).forEach(([header, value]) => {
-  Astro.response.headers.set(header, value);
-});
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" class="scroll-smooth dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
     <meta name="description" content={description} />
-    <meta name="keywords" content={siteConfig.keywords.join(', ')} />
-    <meta name="author" content={siteConfig.author.name} />
-    <meta name="theme-color" content="#0f172a" />
-    
-    <!-- SEO -->
+    {noIndex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonicalURL} />
-    {noIndex && <meta name="robots" content="noindex,nofollow" />}
-    {!noIndex && <meta name="robots" content="index,follow" />}
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="manifest" href="/manifest.json" />
-    
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/fonts/SpaceGrotesk.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    
-    <!-- Open Graph -->
-    <meta property="og:site_name" content={siteConfig.name} />
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:type" content={ogType} />
     <meta property="og:image" content={socialImageURL} />
-    <meta property="og:image:alt" content={`${title} | ${siteConfig.name}`} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
-    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
-    {section && <meta property="article:section" content={section} />}
-    {tags?.map(tag => <meta property="article:tag" content={tag} />)}
+    <meta property="og:site_name" content={siteConfig.name} />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content={siteConfig.author.twitter} />
-    <meta name="twitter:creator" content={siteConfig.author.twitter} />
+    <meta name="twitter:url" content={canonicalURL} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageURL} />
+    <meta name="twitter:creator" content={siteConfig.twitterHandle} />
     
-    <!-- PWA -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content={siteConfig.name} />
-    
-    <!-- Generator -->
-    <meta name="generator" content={Astro.generator} />
-
-    <!-- Title -->
-    <title>{title} | {siteConfig.name}</title>
-
-    <!-- JSON-LD -->
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
-
-    <!-- Service Worker -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .then(registration => {
-              console.log('ServiceWorker registration successful');
-            })
-            .catch(error => {
-              console.error('ServiceWorker registration failed:', error);
-            });
-        });
-      }
-    </script>
-    <!-- Google tag (gtag.js) -->
-    <script async src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){window.dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '${googleAnalyticsId}');
-    </script>
-  </head>
-  <body class="bg-navy-700 text-navy-100 font-SpaceGrotesk">
-    <!-- Skip to main content -->
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:p-4 focus:bg-primary-500 focus:text-white">
-      Skip to main content
-    </a>
-
-    <Navigation />
-
-    <main id="main" class="animate-fade-in min-h-screen">
-      <slot />
-    </main>
-
-    <Footer />
-
-    <!-- Remove Vercel Analytics -->
-    <!-- <Analytics /> -->
-
-    <!-- Analytics (only in production) -->
-    {import.meta.env.PROD && import.meta.env.GOOGLE_ANALYTICS_ID && (
+    <!-- Article specific meta tags -->
+    {article && (
       <>
-        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.GOOGLE_ANALYTICS_ID}`} />
-        <script is:inline define:vars={{ GA_ID: import.meta.env.GOOGLE_ANALYTICS_ID }}>
+        <meta property="article:published_time" content={publishedTime} />
+        {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+        {authors?.map(author => (
+          <meta property="article:author" content={author} />
+        ))}
+        {section && <meta property="article:section" content={section} />}
+        {tags?.map(tag => (
+          <meta property="article:tag" content={tag} />
+        ))}
+      </>
+    )}
+    
+    <!-- JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0F172A" />
+    
+    <!-- Google Analytics -->
+    {!isDev && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} />
+        <script define:vars={{ GA4_ID, GTM_ID }}>
           window.dataLayer = window.dataLayer || [];
-          function gtag() {
-            dataLayer.push(arguments);
-          }
+          function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', GA_ID);
+          gtag('config', GA4_ID);
+          
+          // Google Tag Manager
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer',GTM_ID);
         </script>
       </>
     )}
+  </head>
+  <body class="bg-navy-700 text-navy-100 font-SpaceGrotesk">
+    <!-- Google Tag Manager (noscript) -->
+    {!isDev && (
+      <noscript>
+        <iframe src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+          height="0" width="0" style="display:none;visibility:hidden"></iframe>
+      </noscript>
+    )}
+    
+    <Navigation />
+    <slot />
+    <Footer />
+    <ScrollToTop />
+    {!isDev && <Analytics />}
   </body>
 </html>
+
+<!-- TODO: favicons use ffmpeg, Google Tag Manager (GTM)   , SEO metadata, vercel analytics, dark mode and light mode, clean up the code, edite the readme file, deploy to vercel, sinner achivement -->

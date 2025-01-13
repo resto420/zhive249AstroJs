@@ -49,9 +49,6 @@ export default defineConfig({
     },
     ssr: {
       noExternal: ['path-to-regexp'],
-    },
-    optimizeDeps: {
-      exclude: ['node:*'],
-    },
-  },
+    }
+  }
 });
